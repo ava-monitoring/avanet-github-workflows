@@ -1,4 +1,4 @@
-name: Verify Pull Request
+name: Build master
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  build:
+  deployNewVersion:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,7 +25,7 @@ jobs:
           # server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
           # settings-path: ${{ github.workspace }} # location for the settings.xml file
       - name: Build with Maven
-        run: mvn verify -s local-settings.xml --batch-mode
+        run: mvn release:prepare release:perform -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
         env:
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
