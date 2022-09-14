@@ -95,6 +95,7 @@ jobs:
           workflow: Update values files
           token: ${{ secrets.GH_PACKAGES_TOKEN }}
           ref: dev # Branch
+          # See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
           inputs: |
             {
               "imageName": "${{ inputs.ecr-repository }}",
@@ -130,6 +131,7 @@ jobs:
           workflow: Update values files
           token: ${{ secrets.GH_PACKAGES_TOKEN }}
           ref: dev # Branch
+          # See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
           inputs: |
             {
               "imageName": "${{ inputs.ecr-repository }}",
