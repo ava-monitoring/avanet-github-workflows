@@ -24,12 +24,17 @@ jobs:
           cache: maven
           # server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
           # settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Build with Maven
+        run: mvn package -s local-settings.xml --batch-mode
+        env: # Credentials allowed to fetch packages from other repos
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
       - name: Configure Git
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-      - name: Build with Maven
+      - name: Release with Maven
         run: mvn release:prepare release:perform -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
-        env:
-          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
-          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
+        env: # Credentials allowed to push to repo
+          GITHUB_USERNAME: '${{ github.actor }}'
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
