@@ -7,6 +7,10 @@ on:
         required: true
         type: string
         description: 'ECR repository to which images will be pushed'
+      application-name:
+        required: true
+        type: string
+        description: 'Name of application'
       jvm-docker-file:
         default: 'src/main/docker/Dockerfile.jvm'
         required: false
@@ -82,7 +86,26 @@ jobs:
 #          file: ${{ inputs.jvm-docker-file }}
 #          push: true
 #          tags: 059741451001.dkr.ecr.eu-north-1.amazonaws.com/avanet/notification-api:${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm # TODO Paremeter
-      # TODO Trigger avanet-charts
+      - name: Trigger avanet-charts with JVM image
+        # https://github.com/marketplace/actions/workflow-dispatch
+        # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          repo: ava-monitoring/avanet-charts
+          workflow: Update values files
+          token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          ref: dev # Branch
+          inputs: |
+            {
+              "imageName": "${{ inputs.ecr-repository }}",
+              "imageTag": "${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}",
+              "imageTagSuffix": "jvm",
+              "applicationName": "${{ inputs.application-name }}",
+              "commitSha": "${{ github.event.after }}",
+              "commitLink": "${{ github.event.compare }}",
+              "commitMessage": "${{ github.event.head_commit.message }}",
+              "commitAuthor": "${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>"
+            }
       - name: Build native image
         # Use -Dquarkus.native.container-build=true instead of running on quay.io/quarkus/ubi-quarkus-mandrel:21.3-java17
         run: mvn integration-test -s local-settings.xml -Pnative -Dquarkus.native.container-build=true --batch-mode
@@ -98,4 +121,23 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-      # TODO Trigger avanet-charts
+      - name: Trigger avanet-charts with native image
+        # https://github.com/marketplace/actions/workflow-dispatch
+        # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          repo: ava-monitoring/avanet-charts
+          workflow: Update values files
+          token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          ref: dev # Branch
+          inputs: |
+            {
+              "imageName": "${{ inputs.ecr-repository }}",
+              "imageTag": "${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}",
+              "imageTagSuffix": "native",
+              "applicationName": "${{ inputs.application-name }}",
+              "commitSha": "${{ github.event.after }}",
+              "commitLink": "${{ github.event.compare }}",
+              "commitMessage": "${{ github.event.head_commit.message }}",
+              "commitAuthor": "${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>"
+            }
