@@ -33,7 +33,10 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-      - run: 'echo "GitHub user used to release: ${{ github.actor }}"'
+      # Reversed to avoid masking
+      - run: |
+          echo "GitHub user used to release, reversed:"
+          echo ${{ github.actor }} | rev
       - name: Release with Maven
         # TODO Remove scmCommentPrefix when Drone no longer used
         run: mvn release:prepare release:perform -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
