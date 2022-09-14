@@ -24,6 +24,10 @@ jobs:
           cache: maven
           # server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
           # settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Configure Git
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
       - name: Build with Maven
         run: mvn release:prepare release:perform -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
         env:
