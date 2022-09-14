@@ -1,0 +1,101 @@
+name: Build master
+
+on:
+  workflow_call:
+    inputs:
+      ecr-repository:
+        required: true
+        type: string
+        description: 'ECR repository to which images will be pushed'
+      jvm-docker-file:
+        default: 'src/main/docker/Dockerfile.jvm'
+        required: false
+        type: string
+        description: 'Path to Dockerfile for JVM image'
+      native-docker-file:
+        default: 'src/main/docker/Dockerfile.native'
+        required: false
+        type: string
+        description: 'Path to Dockerfile for native image'
+    secrets:
+      GH_PACKAGES_USERNAME:
+        required: true
+      GH_PACKAGES_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      ECR_REGISTRY:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Build JAR with Maven
+        run: mvn package -Dmaven.test.skip=true -s local-settings.xml --batch-mode
+        env:
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          # role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: '${{ secrets.ECR_REGISTRY }}'
+      - name: Substring SHA
+        run: echo "::set-output name=GITHUB_SHA_SUBSTRING::${GITHUB_SHA:0:8}"
+        id: sha-substring
+      - name: Publish JVM image to AWS
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ inputs.ecr-repository }}
+          IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.jvm-docker-file }} .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#      - name: Publish JVM image to AWS
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: .
+#          file: ${{ inputs.jvm-docker-file }}
+#          push: true
+#          tags: 059741451001.dkr.ecr.eu-north-1.amazonaws.com/avanet/notification-api:${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm # TODO Paremeter
+      # TODO Trigger avanet-charts
+      - name: Build native image
+        # Use -Dquarkus.native.container-build=true instead of running on quay.io/quarkus/ubi-quarkus-mandrel:21.3-java17
+        run: mvn integration-test -s local-settings.xml -Pnative -Dquarkus.native.container-build=true --batch-mode
+        env:
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
+      - name: Publish native image to AWS
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+          REPOSITORY: ${{ inputs.ecr-repository }}
+          IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-native
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      # TODO Trigger avanet-charts
