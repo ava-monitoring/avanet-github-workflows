@@ -35,7 +35,11 @@ jobs:
           git config --local user.name "github-actions[bot]"
       - run: 'echo "GitHub user used to release: ${{ github.actor }}"'
       - name: Release with Maven
-        run: mvn release:prepare release:perform -DlocalCheckout=true -s local-settings.xml --batch-mode
+        # TODO Remove scmCommentPrefix when Drone no longer used
+        run: mvn release:prepare release:perform -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
         env: # Credentials allowed to push to repo
           GITHUB_USERNAME: '${{ github.actor }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Debug Git # TODO remove
+        if: ${{ always() }}
+        run: git reflog
