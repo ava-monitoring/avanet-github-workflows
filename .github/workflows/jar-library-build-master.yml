@@ -43,6 +43,6 @@ jobs:
         env: # Credentials allowed to push to repo
           GITHUB_USERNAME: '${{ github.actor }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: Debug Git # TODO remove
-        if: ${{ always() }}
-        run: git reflog
+      #- name: Debug Git
+      #  if: ${{ always() }}
+      #  run: git reflog
