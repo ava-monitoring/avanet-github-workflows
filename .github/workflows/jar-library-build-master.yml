@@ -33,8 +33,9 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+      - run: 'echo "GitHub user used to release: ${{ github.actor }}"'
       - name: Release with Maven
-        run: mvn release:prepare release:perform -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
+        run: mvn release:prepare release:perform -DlocalCheckout=true -s local-settings.xml --batch-mode
         env: # Credentials allowed to push to repo
           GITHUB_USERNAME: '${{ github.actor }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
