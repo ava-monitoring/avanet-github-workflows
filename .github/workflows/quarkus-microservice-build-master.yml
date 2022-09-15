@@ -21,6 +21,11 @@ on:
         required: false
         type: string
         description: 'Path to Dockerfile for native image'
+      docker-context:
+        default: '.'
+        required: false
+        type: string
+        description: 'Context/path for Docker build'
     secrets:
       GH_PACKAGES_USERNAME:
         required: true
@@ -75,17 +80,8 @@ jobs:
           REPOSITORY: ${{ inputs.ecr-repository }}
           IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.jvm-docker-file }} .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.jvm-docker-file }} ${{ inputs.docker-context }}
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#      - name: Publish JVM image to AWS
-#        uses: docker/build-push-action@v3
-#        with:
-#          context: .
-#          file: ${{ inputs.jvm-docker-file }}
-#          push: true
-#          tags: 059741451001.dkr.ecr.eu-north-1.amazonaws.com/avanet/notification-api:${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm # TODO Paremeter
       - name: Trigger avanet-charts with JVM image
         # https://github.com/marketplace/actions/workflow-dispatch
         # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
@@ -117,11 +113,10 @@ jobs:
       - name: Publish native image to AWS
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-
           REPOSITORY: ${{ inputs.ecr-repository }}
           IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-native
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} ${{ inputs.docker-context }}
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
       - name: Trigger avanet-charts with native image
         # https://github.com/marketplace/actions/workflow-dispatch
