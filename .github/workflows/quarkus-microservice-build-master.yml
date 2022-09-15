@@ -93,7 +93,7 @@ jobs:
         with:
           repo: ava-monitoring/avanet-charts
           workflow: Update values files
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_WORKFLOW_TOKEN }}
           ref: dev # Branch
           # See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
           inputs: |
@@ -129,7 +129,7 @@ jobs:
         with:
           repo: ava-monitoring/avanet-charts
           workflow: Update values files
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_WORKFLOW_TOKEN }}
           ref: dev # Branch
           # See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
           inputs: |
