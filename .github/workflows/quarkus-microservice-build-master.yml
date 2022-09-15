@@ -3,6 +3,11 @@ name: Build master
 on:
   workflow_call:
     inputs:
+      native:
+        required: false
+        default: true
+        type: boolean
+        description: 'Build native image?'
       ecr-repository:
         required: true
         type: string
@@ -105,12 +110,14 @@ jobs:
               "commitAuthorUsername": "${{ github.event.head_commit.author.username }}"
             }
       - name: Build native image
+        if: ${{ inputs.native }}
         # Use -Dquarkus.native.container-build=true instead of running on quay.io/quarkus/ubi-quarkus-mandrel:21.3-java17
         run: mvn integration-test -s local-settings.xml -Pnative -Dquarkus.native.container-build=true --batch-mode
         env:
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
       - name: Publish native image to AWS
+        if: ${{ inputs.native }}
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ inputs.ecr-repository }}
@@ -119,6 +126,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} ${{ inputs.docker-context }}
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
       - name: Trigger avanet-charts with native image
+        if: ${{ inputs.native }}
         # https://github.com/marketplace/actions/workflow-dispatch
         # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
         uses: benc-uk/workflow-dispatch@v1
