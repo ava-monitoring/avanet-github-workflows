@@ -100,7 +100,7 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
       - name: Remove newlines from commit message
         id: commit-message
-        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " ")"
+        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" "\\n")"
       - name: Trigger avanet-charts with JVM image
         # https://github.com/marketplace/actions/workflow-dispatch
         # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
