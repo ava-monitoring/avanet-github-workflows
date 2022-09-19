@@ -98,6 +98,9 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.jvm-docker-file }} ${{ inputs.docker-context }}
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      - name: Remove newlines from commit message
+        id: commit-message
+        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " ")"
       - name: Trigger avanet-charts with JVM image
         # https://github.com/marketplace/actions/workflow-dispatch
         # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action
@@ -116,7 +119,7 @@ jobs:
               "applicationName": "${{ inputs.application-name }}",
               "commitSha": "${{ github.event.after }}",
               "commitLink": "${{ github.event.compare }}",
-              "commitMessage": "${{ github.event.head_commit.message }}",
+              "commitMessage": "${{ steps.commit-message.outputs.COMMIT_MESSAGE }}",
               "commitAuthor": "${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>",
               "commitAuthorUsername": "${{ github.event.head_commit.author.username }}"
             }
@@ -155,7 +158,7 @@ jobs:
               "applicationName": "${{ inputs.application-name }}",
               "commitSha": "${{ github.event.after }}",
               "commitLink": "${{ github.event.compare }}",
-              "commitMessage": "${{ github.event.head_commit.message }}",
+              "commitMessage": "${{ steps.commit-message.outputs.COMMIT_MESSAGE }}",
               "commitAuthor": "${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>",
               "commitAuthorUsername": "${{ github.event.head_commit.author.username }}"
             }
