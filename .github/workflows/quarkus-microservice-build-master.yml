@@ -90,7 +90,7 @@ jobs:
             echo "Create Pull Request on avanet-charts test branch"
             echo "::set-output name=CHARTS_REF::test"
           fi
-      - name: Set up Docker with BuilderX
+      - name: Set up Docker with BuildX
         uses: docker/setup-buildx-action@v1
       - name: Publish JVM image to AWS
         uses: docker/build-push-action@v2
