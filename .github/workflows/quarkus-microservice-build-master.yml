@@ -90,14 +90,17 @@ jobs:
             echo "Create Pull Request on avanet-charts test branch"
             echo "::set-output name=CHARTS_REF::test"
           fi
+      - name: Set up Docker with BuilderX
+        uses: docker/setup-buildx-action@v1
       - name: Publish JVM image to AWS
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ inputs.ecr-repository }}
-          IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm
-        run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.jvm-docker-file }} ${{ inputs.docker-context }}
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        uses: docker/build-push-action@v2
+        with:
+          file: ${{ inputs.jvm-docker-file }}
+          context: ${{ inputs.docker-context }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-jvm
+          push: true
       - name: Remove newlines from commit message
         id: commit-message
         run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " ")"
@@ -132,13 +135,14 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
       - name: Publish native image to AWS
         if: ${{ inputs.native }}
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ inputs.ecr-repository }}
-          IMAGE_TAG: ${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-native
-        run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f ${{ inputs.native-docker-file }} ${{ inputs.docker-context }}
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        uses: docker/build-push-action@v2
+        with:
+          file: ${{ inputs.native-docker-file }}
+          context: ${{ inputs.docker-context }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ github.run_number }}-${{ steps.sha-substring.outputs.GITHUB_SHA_SUBSTRING }}-native
+          push: true
       - name: Trigger avanet-charts with native image
         if: ${{ inputs.native }}
         # https://github.com/marketplace/actions/workflow-dispatch
