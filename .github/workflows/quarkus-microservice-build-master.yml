@@ -93,8 +93,8 @@ jobs:
             echo "Create Pull Request on avanet-charts dev branch"
             echo "::set-output name=CHARTS_REF::dev"
           else
-            echo "Create Pull Request on avanet-charts test branch"
-            echo "::set-output name=CHARTS_REF::test"
+            echo "Create Pull Request on avanet-charts beta branch"
+            echo "::set-output name=CHARTS_REF::beta"
           fi
       - name: Publish JVM image to AWS
         env:
