@@ -78,7 +78,9 @@ jobs:
         run: |
           echo "Debug"
           echo "GITHUB_SHA: >${GITHUB_SHA}<"
-          echo "rev-parse: >$(git rev-parse refs/remotes/origin/master --)<"
+          echo "rev-parse 1: >$(git rev-parse refs/remotes/origin/master)<"
+          echo "rev-parse 2: >$(git rev-parse refs/remotes/origin/master --)<"
+          echo "rev-parse 3: >$(git rev-parse refs/remotes/origin/master -- | grep -v "--")<"
           
           if [ "${GITHUB_SHA}" == "$(git rev-parse refs/remotes/origin/master --)" ]; then
             echo "Same commit as master branch - cancelling build by failing"
