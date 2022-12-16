@@ -70,6 +70,17 @@ jobs:
           distribution: 'temurin'
           server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
+      # If "master" branch is fast-forward merged into "release" branch, it means commit has already been built
+      # In such a case we want to avoid building again
+      - name: Check for duplicate build
+        if: ${{ github.ref_name != 'master' }} # When building release (or any non-master) branch
+        run: |
+          if [ "${GITHUB_SHA}" == "$(git rev-parse refs/remotes/origin/master)" ]; then
+            echo "Same commit as master branch - cancelling build by failing"
+            exit 1
+          else
+            echo "Commit is different than master branch - continue build"
+          fi
       - name: Build JAR with Maven
         run: mvn package -Dmaven.test.skip=true -s local-settings.xml --batch-mode
         env:
