@@ -42,6 +42,8 @@ jobs:
             --failOnCVSS 7
             --enableRetired
             --suppression owasp-dependency-check-suppressions.xml
+        env:
+          JAVA_HOME: /opt/jdk
       - name: Upload Test results
         uses: actions/upload-artifact@master
         with:
