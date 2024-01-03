@@ -7,6 +7,8 @@ on:
         required: true
       GH_PACKAGES_TOKEN:
         required: true
+      GH_WORKFLOW_TOKEN:
+        required: true
 
 jobs:
   build:
@@ -32,7 +34,9 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
       - name: Retrieve Suppression File
         run: |
-          curl -H "Authorization: token ${GITHUB_TOKEN}" https://raw.githubusercontent.com/ava-monitoring/avanet-parent/master/avanet-build-common/src/main/resources/owasp-dependency-check-suppressions.xml > owasp-dependency-check-suppressions.xml
+          curl -H "Authorization: token ${GH_WORKFLOW_TOKEN}" https://raw.githubusercontent.com/ava-monitoring/avanet-parent/master/avanet-build-common/src/main/resources/owasp-dependency-check-suppressions.xml > owasp-dependency-check-suppressions.xml
+        env:
+          GH_WORKFLOW_TOKEN: '${{ secrets.GH_WORKFLOW_TOKEN }}'
       - name: Print Suppression File
         run: |
           cat owasp-dependency-check-suppressions.xml
