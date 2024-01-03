@@ -33,6 +33,9 @@ jobs:
       - name: Retrieve Suppression File
         run: |
           curl -H "Authorization: token ${GITHUB_TOKEN}" https://raw.githubusercontent.com/ava-monitoring/avanet-parent/master/avanet-build-common/src/main/resources/owasp-dependency-check-suppressions.xml > owasp-dependency-check-suppressions.xml
+      - name: Print Suppression File
+        run: |
+          cat owasp-dependency-check-suppressions.xml
       - name: Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
         id: Depcheck
