@@ -53,7 +53,7 @@ jobs:
           JAVA_HOME: /opt/jdk
       - name: Upload Test results
         uses: actions/upload-artifact@master
-        if: steps.depcheck.outcome == 'success' || steps.depcheck.outcome == 'failure'
+        if: success() || steps.depcheck.outcome == 'failure'
         with:
           name: Dependency Check Report
           path: ${{github.workspace}}/reports
