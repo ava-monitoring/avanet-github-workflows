@@ -55,6 +55,7 @@ jobs:
             --enableRetired
             --suppression owasp-dependency-check-suppressions.xml
             --exclude **/target/quarkus-app/quarkus-run.jar
+            --exclude **/avanet-*.jar
         env:
           JAVA_HOME: /opt/jdk
       - name: Upload Test results
