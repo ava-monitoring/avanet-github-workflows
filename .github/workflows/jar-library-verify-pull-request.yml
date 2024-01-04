@@ -49,10 +49,9 @@ jobs:
             --failOnCVSS 7
             --enableRetired
             --suppression owasp-dependency-check-suppressions.xml
-            --exclude target/**
-            --exclude **/target/**
-            --disableJar
-            --disableArchive
+            --exclude **/target/quarkus-app/quarkus-run.jar
+            --exclude **/target/quarkus-app/app/*.jar
+            --exclude **/target/*.jar
         env:
           JAVA_HOME: /opt/jdk
       - name: Upload Test results
