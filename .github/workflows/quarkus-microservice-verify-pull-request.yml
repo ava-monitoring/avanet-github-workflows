@@ -51,6 +51,7 @@ jobs:
             --suppression owasp-dependency-check-suppressions.xml
             --exclude /target/
             --exclude /**/target/
+            --exclude /**/target/**
             --exclude /target/**
         env:
           JAVA_HOME: /opt/jdk
