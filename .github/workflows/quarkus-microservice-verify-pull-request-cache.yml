@@ -55,6 +55,7 @@ jobs:
             --enableRetired
             --suppression owasp-dependency-check-suppressions.xml
             --exclude **/target/quarkus-app/quarkus-run.jar
+            --exclude **/quarkus-run.jar
             --exclude **/target/quarkus-app/app/*.jar
             --exclude **/target/*.jar
         env:
