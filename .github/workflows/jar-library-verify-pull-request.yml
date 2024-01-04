@@ -52,8 +52,8 @@ jobs:
             --exclude '/target/'
             --exclude '/target/**'
             --exclude '/**/target/'
-            --exclude '/**/target/**'
-            --disableArchive
+            --exclude '/**/target/**/'
+            --exclude '/**/quarkus-run.jar'
         env:
           JAVA_HOME: /opt/jdk
       - name: Upload Test results
