@@ -1,0 +1,49 @@
+name: Build master
+
+on:
+  workflow_call:
+    secrets:
+      GH_PACKAGES_USERNAME:
+        required: true
+      GH_PACKAGES_TOKEN:
+        required: true
+
+jobs:
+  deployNewVersion:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Allow pushing updated pom.xml
+      packages: write # Allow deploying packages
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          # server-id: avanet-github # Value of the distributionManagement/repository/id field of the pom.xml
+          # settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Build with Maven
+        run: mvn package -s local-settings.xml --batch-mode
+        env: # Credentials allowed to fetch packages from other repos
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
+      - name: Configure Git
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      # Reversed to avoid masking
+      - run: |
+          echo "GitHub user used to release, reversed:"
+          echo ${{ github.actor }} | rev
+      - name: Release with Maven
+        # TODO Remove scmCommentPrefix when Drone no longer used
+        run: mvn release:prepare release:perform -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
+        env: # Credentials allowed to push to repo
+          GITHUB_USERNAME: '${{ github.actor }}'
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      #- name: Debug Git
+      #  if: ${{ always() }}
+      #  run: git reflog
