@@ -83,7 +83,6 @@ jobs:
           - avanet-alarm-contract
           - avanet-api
           - avanet-api-contract
-          - avanet-browser-tests
           - avanet-common
           - avanet-data-ingestion-api
           - avanet-deviceagent

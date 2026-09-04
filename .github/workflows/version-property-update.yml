@@ -50,6 +50,7 @@ jobs:
       # This won't do anything if there was no change above. We could have used grep to check.
       - uses: peter-evans/create-pull-request@v8
         with:
+          token: '${{ secrets.GH_PACKAGES_TOKEN }}'
           base: master
           branch: deps/${{ inputs.lib-name }}-${{ inputs.version }}
           commit-message: "chore: bump ${{ inputs.lib-name }} to ${{ inputs.version }}"
@@ -57,5 +58,6 @@ jobs:
           body: |
             Automated version bump for property `${{ inputs.lib-name }}.version` to `${{ inputs.version }}`.
           author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # assignees: ${{ inputs.requester }}
           reviewers: ${{ inputs.requester }}
