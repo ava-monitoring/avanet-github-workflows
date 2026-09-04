@@ -70,13 +70,12 @@ jobs:
       - uses: peter-evans/create-pull-request@v8
         if: steps.check-parent.outputs.match == 'true'
         with:
-          token: ${{ secrets.GH_PACKAGES_TOKEN }}
           base: master
           branch: parent/${{ inputs.version }}
           commit-message: "chore: bump parent to ${{ inputs.version }}"
           title: "Bump parent to ${{ inputs.version }}"
           body: |
             Automated parent bump to `${{ inputs.version }}`.
-          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          # author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # assignees: ${{ inputs.requester }}
           reviewers: ${{ inputs.requester }}
