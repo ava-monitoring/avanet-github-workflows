@@ -1,0 +1,86 @@
+name: Publish TechDocs
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: Directory containing mkdocs.yml and the TechDocs content
+        required: false
+        default: .
+        type: string
+      entity:
+        description: Backstage entity reference used as the S3 publish key
+        required: true
+        type: string
+      techdocs_bucket:
+        description: S3 bucket receiving generated TechDocs
+        required: true
+        type: string
+      publisher_role_arn:
+        description: AWS IAM role assumed through GitHub Actions OIDC
+        required: true
+        type: string
+      aws_region:
+        description: AWS region containing the TechDocs bucket
+        required: false
+        default: eu-north-1
+        type: string
+      node_version:
+        description: Node.js version used by the TechDocs CLI
+        required: false
+        default: '24.x'
+        type: string
+      python_version:
+        description: Python version used by MkDocs
+        required: false
+        default: '3.12'
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish TechDocs
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      TECHDOCS_S3_BUCKET_NAME: ${{ inputs.techdocs_bucket }}
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.publisher_role_arn }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Install TechDocs tooling
+        run: |
+          npm install --global @techdocs/cli@1.8.0
+          python -m pip install mkdocs-techdocs-core==1.7.0
+
+      - name: Generate documentation
+        working-directory: ${{ inputs.working_directory }}
+        run: techdocs-cli generate --no-docker --verbose
+
+      - name: Publish documentation
+        working-directory: ${{ inputs.working_directory }}
+        run: >-
+          techdocs-cli publish
+          --publisher-type awsS3
+          --storage-name "$TECHDOCS_S3_BUCKET_NAME"
+          --entity "${{ inputs.entity }}"
