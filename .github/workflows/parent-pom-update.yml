@@ -42,14 +42,17 @@ jobs:
       - name: Check parent matches expected coordinates
         id: check-parent
         run: |
-          GROUP=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.parent.groupId}' --non-recursive exec:exec)
-          ARTIFACT=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.parent.artifactId}' --non-recursive exec:exec)
+          GROUP=$(mvn -s local-settings.xml -q -Dexec.executable=echo -Dexec.args='${project.parent.groupId}' --non-recursive exec:exec)
+          ARTIFACT=$(mvn -s local-settings.xml -q -Dexec.executable=echo -Dexec.args='${project.parent.artifactId}' --non-recursive exec:exec)
           if [ "$GROUP" = "${{ inputs.parent-group-id }}" ] && [ "$ARTIFACT" = "${{ inputs.parent-artifact-id }}" ]; then
             echo "match=true" >> "$GITHUB_OUTPUT"
           else
             echo "match=false" >> "$GITHUB_OUTPUT"
             echo "::notice::Parent is $GROUP:$ARTIFACT, not ${{ inputs.parent-group-id }}:${{ inputs.parent-artifact-id }}. Skipping."
           fi
+        env: # Credentials allowed to fetch packages from other repos
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 
       - name: Bump dependency version
         if: steps.check-parent.outputs.match == 'true'
