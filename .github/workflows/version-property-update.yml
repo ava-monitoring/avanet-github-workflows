@@ -36,12 +36,12 @@ jobs:
 
       - name: Bump dependency version
         run: |
-          mvn versions:set-property \
-            -s local-settings.xml --batch-mode \
+          mvn -s local-settings.xml --batch-mode \
+            versions:update-parent \
             -Dproperty=${{ inputs.version-property }} \
             -DnewVersion=${{ inputs.version }} \
             -DgenerateBackupPoms=false
-        env:
+        env: # Credentials allowed to fetch packages from other repos
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 

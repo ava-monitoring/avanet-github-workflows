@@ -52,12 +52,12 @@ jobs:
       - name: Bump dependency version
         if: steps.check-parent.outputs.match == 'true'
         run: |
-          mvn versions:update-parent \
-            -s local-settings.xml --batch-mode \
+          mvn -s local-settings.xml --batch-mode \
+            versions:update-parent \
             -DskipResolution=true \
-            -parentVersion=${{ inputs.version }} \
+            -DparentVersion=${{ inputs.version }} \
             -DgenerateBackupPoms=false
-        env:
+        env: # Credentials allowed to fetch packages from other repos
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 
