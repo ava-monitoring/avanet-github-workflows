@@ -41,6 +41,8 @@ jobs:
             -DnewVersion=${{ inputs.version }} \
             -DgenerateBackupPoms=false \
             -s local-settings.xml
+        env:
+          GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 
       # This won't do anything if there was no change above. We could have used grep to check.
       - uses: peter-evans/create-pull-request@v6
