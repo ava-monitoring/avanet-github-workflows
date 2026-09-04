@@ -7,7 +7,7 @@ on:
         required: true
         type: string
         description: The event type to broadcast when build is done; lib-release or pom-release
-      property-name:
+      lib-name:
         type: string
         description: For lib-release, the name of the POM property consumers use to configure the version of this library
       group-id:
@@ -116,5 +116,5 @@ jobs:
           event-type: ${{ inputs.event-type }}
           client-payload: >-
             {"groupId": "${{ inputs.group-id }}", "artifactId": "${{ inputs.artifact-id }}",
-             "property-name": "${{ inputs.property-name }}", 
+             "lib-name": "${{ inputs.lib-name }}", 
              "version": "${{ needs.deployNewVersion.outputs.version }}", "actor": "${{ github.actor }}"}
