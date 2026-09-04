@@ -5,7 +5,7 @@ name: Dependency version property bump
 on:
   workflow_call:
     inputs:
-      version-property:
+      lib-name:
         required: true
         type: string
       version:
@@ -40,7 +40,7 @@ jobs:
         run: |
           mvn -s local-settings.xml --batch-mode \
             versions:set-property \
-            -Dproperty=${{ inputs.version-property }} \
+            -Dproperty=${{ inputs.lib-name }}.version \
             -DnewVersion=${{ inputs.version }} \
             -DgenerateBackupPoms=false
         env: # Credentials allowed to fetch packages from other repos
@@ -52,11 +52,11 @@ jobs:
         with:
           token: ${{ secrets.GH_PACKAGES_TOKEN }}
           base: master
-          branch: deps/${{ inputs.version-property }}-${{ inputs.version }}
-          commit-message: "chore: bump ${{ inputs.version-property }} to ${{ inputs.version }}"
-          title: "Bump ${{ inputs.version-property }} to ${{ inputs.version }}"
+          branch: deps/${{ inputs.lib-name }}-${{ inputs.version }}
+          commit-message: "chore: bump ${{ inputs.lib-name }} to ${{ inputs.version }}"
+          title: "Bump ${{ inputs.lib-name }} to ${{ inputs.version }}"
           body: |
-            Automated version bump for property `${{ inputs.version-property }}` to `${{ inputs.version }}`.
+            Automated version bump for property `${{ inputs.lib-name }}.version` to `${{ inputs.version }}`.
           author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # assignees: ${{ inputs.requester }}
           reviewers: ${{ inputs.requester }}
