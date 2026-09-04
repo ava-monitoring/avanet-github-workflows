@@ -1,0 +1,72 @@
+# Workflow that creates a Pull Request where the parent POM version is bumped to a new version.
+
+name: Parent POM bump
+
+on:
+  workflow_call:
+    inputs:
+      parent-group-id:
+        required: true
+        type: string
+      parent-artifact-id:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      requester:
+        required: true
+        type: string
+    secrets:
+      gh-token:
+        required: true
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Check parent matches expected coordinates
+        id: check-parent
+        run: |
+          GROUP=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.parent.groupId}' --non-recursive exec:exec)
+          ARTIFACT=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.parent.artifactId}' --non-recursive exec:exec)
+          if [ "$GROUP" = "${{ inputs.parent-group-id }}" ] && [ "$ARTIFACT" = "${{ inputs.parent-artifact-id }}" ]; then
+            echo "match=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "match=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Parent is $GROUP:$ARTIFACT, not ${{ inputs.parent-group-id }}:${{ inputs.parent-artifact-id }}. Skipping."
+          fi
+
+      - name: Bump dependency version
+        if: steps.check-parent.outputs.match == 'true'
+        run: |
+          mvn versions:update-parent \
+            -DskipResolution=true \
+            -parentVersion=${{ inputs.version }} \
+            -DgenerateBackupPoms=false
+
+      # This won't do anything if there was no change above. We could have used grep to check.
+      - uses: peter-evans/create-pull-request@v6
+        if: steps.check-parent.outputs.match == 'true'
+        with:
+          token: ${{ secrets.gh-token }}
+          base: master
+          branch: parent/${{ inputs.version }}
+          commit-message: "chore: bump parent to ${{ inputs.version }}"
+          title: "Bump parent to ${{ inputs.version }}"
+          body: |
+            Automated parent bump to `${{ inputs.version }}`.
+          assignees: ${{ inputs.requester }}
+          reviewers: ${{ inputs.requester }}

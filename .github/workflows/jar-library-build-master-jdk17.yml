@@ -2,6 +2,20 @@ name: Build master
 
 on:
   workflow_call:
+    inputs:
+      event-type:
+        required: true
+        type: string
+        description: The event type to broadcast when build is done; lib-release or pom-release
+      property-name:
+        type: string
+        description: For lib-release, the name of the POM property consumers use to configure the version of this library
+      group-id:
+        type: string
+        description: For pom-release, the artifact groupId
+      artifact-id:
+        type: string
+        description: For pom-release, the artifactId
     secrets:
       GH_PACKAGES_USERNAME:
         required: true
@@ -44,6 +58,60 @@ jobs:
         env: # Credentials allowed to push to repo
           GITHUB_USERNAME: '${{ github.actor }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      # Get version for dispatching to consumer repos
+      - name: Extract released version
+        id: get-version
+        run: |
+          VERSION=$(grep '^project.rel.' release.properties | head -1 | cut -d= -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       #- name: Debug Git
       #  if: ${{ always() }}
       #  run: git reflog
+  notify-consumers:
+    needs: deployNewVersion
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - avanet-alarm-api
+          - avanet-alarm-contract
+          - avanet-api
+          - avanet-api-contract
+          - avanet-browser-tests
+          - avanet-calibration-api
+          - avanet-common
+          - avanet-data-ingestion-api
+          - avanet-deviceagent
+          - avanet-deviceagent-infra
+          - avanet-deviceagent-sensorbee
+          - avanet-devicemgmt-api
+          - avanet-github-packages
+          - avanet-heartbeat
+          - avanet-i18n
+          - avanet-invoice-api
+          - avanet-invoice-contract
+          - avanet-measurement-api
+          - avanet-measurement-contract
+          - avanet-notification-api
+          - avanet-notification-contract
+          - avanet-quarkus-parent
+          - avanet-report-contract
+          - avanet-report-service
+          - avanet-rest-api
+          - avanet-rest-api-new
+          - avanet-user-api
+          - avanet-user-contract
+          - avanet-waveform-util
+          - avanet-websockets
+    steps:
+      - name: Dispatch to ${{ matrix.repo }}
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ava-monitoring/${{ matrix.repo }}
+          event-type: ${{ inputs.event-type }}
+          client-payload: >-
+            {"groupId": "${{ inputs.group-id }}", "artifactId": "${{ inputs.artifact-id }}",
+             "property-name": "${{ inputs.property-name }}", 
+             "version": "${{ needs.deployNewVersion.outputs.version }}", "actor": "${{ github.actor }}"}

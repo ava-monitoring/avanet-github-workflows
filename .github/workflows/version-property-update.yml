@@ -1,0 +1,55 @@
+# Workflow that creates a Pull Request where the property that holds the version of a dependency is bumped to a new version.
+
+name: Dependency version property bump
+
+on:
+  workflow_call:
+    inputs:
+      version-property:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      requester:
+        required: true
+        type: string
+    secrets:
+      gh-token:
+        required: true
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Bump dependency version
+        run: |
+          mvn versions:set-property \
+            -Dproperty=${{ inputs.version-property }} \
+            -DnewVersion=${{ inputs.version }} \
+            -DgenerateBackupPoms=false
+
+      # This won't do anything if there was no change above. We could have used grep to check.
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.gh-token }}
+          base: master
+          branch: deps/${{ inputs.version-property }}-${{ inputs.version }}
+          commit-message: "chore: bump ${{ inputs.version-property }} to ${{ inputs.version }}"
+          title: "Bump ${{ inputs.version-property }} to ${{ inputs.version }}"
+          body: |
+            Automated version bump for property `${{ inputs.version-property }}` to `${{ inputs.version }}`.
+          assignees: ${{ inputs.requester }}
+          reviewers: ${{ inputs.requester }}
