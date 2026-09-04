@@ -58,6 +58,7 @@ jobs:
             -DgenerateBackupPoms=false \
             -s local-settings.xml
         env:
+          GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 
       # This won't do anything if there was no change above. We could have used grep to check.
