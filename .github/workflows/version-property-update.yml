@@ -37,10 +37,10 @@ jobs:
       - name: Bump dependency version
         run: |
           mvn versions:set-property \
+            -s local-settings.xml --batch-mode \
             -Dproperty=${{ inputs.version-property }} \
             -DnewVersion=${{ inputs.version }} \
-            -DgenerateBackupPoms=false \
-            -s local-settings.xml
+            -DgenerateBackupPoms=false
         env:
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'

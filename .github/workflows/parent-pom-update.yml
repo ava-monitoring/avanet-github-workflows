@@ -53,10 +53,10 @@ jobs:
         if: steps.check-parent.outputs.match == 'true'
         run: |
           mvn versions:update-parent \
+            -s local-settings.xml --batch-mode \
             -DskipResolution=true \
             -parentVersion=${{ inputs.version }} \
-            -DgenerateBackupPoms=false \
-            -s local-settings.xml
+            -DgenerateBackupPoms=false
         env:
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
