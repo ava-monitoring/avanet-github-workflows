@@ -39,7 +39,8 @@ jobs:
           mvn versions:set-property \
             -Dproperty=${{ inputs.version-property }} \
             -DnewVersion=${{ inputs.version }} \
-            -DgenerateBackupPoms=false
+            -DgenerateBackupPoms=false \
+            -s local-settings.xml
 
       # This won't do anything if there was no change above. We could have used grep to check.
       - uses: peter-evans/create-pull-request@v6
