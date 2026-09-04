@@ -52,7 +52,7 @@ jobs:
       # This won't do anything if there was no change above. We could have used grep to check.
       - uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.gh-token }}
+          token: ${{ secrets.GH_PACKAGES_TOKEN }}
           base: master
           branch: deps/${{ inputs.version-property }}-${{ inputs.version }}
           commit-message: "chore: bump ${{ inputs.version-property }} to ${{ inputs.version }}"
