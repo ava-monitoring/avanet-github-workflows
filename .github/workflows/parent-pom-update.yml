@@ -74,5 +74,6 @@ jobs:
           title: "Bump parent to ${{ inputs.version }}"
           body: |
             Automated parent bump to `${{ inputs.version }}`.
-          assignees: ${{ inputs.requester }}
-          # reviewers: ${{ inputs.requester }}
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          # assignees: ${{ inputs.requester }}
+          reviewers: ${{ inputs.requester }}
