@@ -89,7 +89,6 @@ jobs:
           - avanet-deviceagent
           - avanet-deviceagent-infra
           - avanet-deviceagent-sensorbee
-          - avanet-devicemgmt-api
           - avanet-github-packages
           - avanet-heartbeat
           - avanet-i18n
