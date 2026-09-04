@@ -18,6 +18,10 @@ on:
         required: true
         type: string
     secrets:
+      BOT_APP_ID:
+        required: true
+      BOT_APP_PRIVATE_KEY:
+        required: true
       GH_PACKAGES_USERNAME:
         required: true
       GH_PACKAGES_TOKEN:
@@ -66,11 +70,18 @@ jobs:
           GITHUB_USERNAME: '${{ secrets.GH_PACKAGES_USERNAME }}'
           GITHUB_TOKEN: '${{ secrets.GH_PACKAGES_TOKEN }}'
 
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+
       # This won't do anything if there was no change above. We could have used grep to check.
       - uses: peter-evans/create-pull-request@v8
         if: steps.check-parent.outputs.match == 'true'
         with:
-          token: '${{ secrets.GH_PACKAGES_TOKEN }}'
+          token: ${{ steps.app-token.outputs.token }}
           base: master
           branch: parent/${{ inputs.version }}
           commit-message: "chore: bump parent to ${{ inputs.version }}"
