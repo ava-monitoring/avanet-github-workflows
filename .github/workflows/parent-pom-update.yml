@@ -84,10 +84,10 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           base: master
           branch: parent/${{ inputs.version }}
-          commit-message: "chore: bump parent to ${{ inputs.version }}"
-          title: "Bump parent to ${{ inputs.version }}"
+          commit-message: "chore: bump ${{ inputs.parent-artifact-id }} to ${{ inputs.version }}"
+          title: "Bump ${{ inputs.parent-artifact-id }} to ${{ inputs.version }}"
           body: |
-            Automated parent bump to `${{ inputs.version }}`.
+            Automated parent bump ${{ inputs.parent-artifact-id }} to `${{ inputs.version }}`.
           # author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # assignees: ${{ inputs.requester }}
