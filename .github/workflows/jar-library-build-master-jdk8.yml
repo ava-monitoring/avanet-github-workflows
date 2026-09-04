@@ -52,22 +52,25 @@ jobs:
       - run: |
           echo "GitHub user used to release, reversed:"
           echo ${{ github.actor }} | rev
-      - name: Release with Maven
-        # TODO Remove scmCommentPrefix when Drone no longer used
-        run: mvn release:prepare release:perform -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode -DscmCommentPrefix="[CI SKIP][maven-release-plugin]"
-        env: # Credentials allowed to push to repo
-          GITHUB_USERNAME: '${{ github.actor }}'
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Release prepare
+        run: mvn release:prepare  -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode
+
       # Get version for dispatching to consumer repos
       - name: Extract released version
         id: get-version
         run: |
           VERSION=$(grep '^project.rel.' release.properties | head -1 | cut -d= -f2)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Release perform
+        run: mvn release:perform -P no-analysis -DlocalCheckout=true -s local-settings.xml --batch-mode
+        env: # Credentials allowed to push to repo
+          GITHUB_USERNAME: '${{ github.actor }}'
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       #- name: Debug Git
       #  if: ${{ always() }}
       #  run: git reflog
-  notify-consumers:
+  broadcast-update:
     needs: deployNewVersion
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
@@ -79,7 +82,6 @@ jobs:
           - avanet-api
           - avanet-api-contract
           - avanet-browser-tests
-          - avanet-calibration-api
           - avanet-common
           - avanet-data-ingestion-api
           - avanet-deviceagent
