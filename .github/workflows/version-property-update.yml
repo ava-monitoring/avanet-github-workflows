@@ -35,8 +35,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Bump dependency version
+        # TODO Remove -X and GITHUB_USERNAME
         run: |
-          mvn -s local-settings.xml --batch-mode \
+          echo ${GITHUB_USERNAME} | rev && \
+          mvn -s local-settings.xml --batch-mode -X \
             versions:update-parent \
             -Dproperty=${{ inputs.version-property }} \
             -DnewVersion=${{ inputs.version }} \
