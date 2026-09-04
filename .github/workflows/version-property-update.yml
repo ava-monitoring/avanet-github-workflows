@@ -58,4 +58,4 @@ jobs:
           body: |
             Automated version bump for property `${{ inputs.version-property }}` to `${{ inputs.version }}`.
           assignees: ${{ inputs.requester }}
-          reviewers: ${{ inputs.requester }}
+          # reviewers: ${{ inputs.requester }}

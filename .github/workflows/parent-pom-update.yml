@@ -75,4 +75,4 @@ jobs:
           body: |
             Automated parent bump to `${{ inputs.version }}`.
           assignees: ${{ inputs.requester }}
-          reviewers: ${{ inputs.requester }}
+          # reviewers: ${{ inputs.requester }}
