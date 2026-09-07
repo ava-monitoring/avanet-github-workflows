@@ -102,7 +102,7 @@ jobs:
           - avanet-report-contract
           - avanet-report-service
           - avanet-rest-api
-          - avanet-rest-api-new
+          - avanet-facade-api
           - avanet-user-api
           - avanet-user-contract
           - avanet-waveform-util
