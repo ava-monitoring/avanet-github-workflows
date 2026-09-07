@@ -101,6 +101,7 @@ jobs:
           - avanet-report-contract
           - avanet-report-service
           - avanet-rest-api
+          - avanet-facade-contract
           - avanet-facade-api
           - avanet-user-api
           - avanet-user-contract
