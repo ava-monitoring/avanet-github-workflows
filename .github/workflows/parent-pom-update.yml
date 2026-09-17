@@ -17,6 +17,18 @@ on:
       requester:
         required: true
         type: string
+      commit-sha:
+        type: string
+        description: 'SHA of the original commit that triggered the update'
+      commit-link:
+        type: string
+        description: 'Link to the original commit that triggered the update'
+      commit-message:
+        type: string
+        description: 'Commit message of the original commit that triggered the update'
+      commit-author:
+        type: string
+        description: 'Author of the original commit that triggered the update'
     secrets:
       BOT_APP_ID:
         required: true
@@ -90,6 +102,12 @@ jobs:
           title: "Bump ${{ inputs.parent-artifact-id }} to ${{ inputs.version }}"
           body: |
             Automated parent bump ${{ inputs.parent-artifact-id }} to `${{ inputs.version }}`.
+
+            ${{ inputs.commit-message }}
+
+            Commit: ${{ inputs.commit-sha }}
+            Author: ${{ inputs.commit-author }}
+            ${{ inputs.commit-link }}
           # author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
           # assignees: ${{ inputs.requester }}

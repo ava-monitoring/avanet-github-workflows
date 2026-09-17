@@ -108,13 +108,36 @@ jobs:
           - avanet-waveform-util
           - avanet-websockets
     steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+          owner: ava-monitoring
+          repositories: ${{ matrix.repo }}
+
+      - name: Remove newlines from commit message
+        id: commit-message
+        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " " | tr "\t" " ")"
+
       - name: Dispatch to ${{ matrix.repo }}
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           repository: ava-monitoring/${{ matrix.repo }}
           event-type: ${{ inputs.event-type }}
-          client-payload: >-
-            {"groupId": "${{ inputs.group-id }}", "artifactId": "${{ inputs.artifact-id }}",
-             "lib-name": "${{ inputs.lib-name }}", 
-             "version": "${{ needs.deployNewVersion.outputs.version }}", "actor": "${{ github.actor }}"}
+          client-payload: |
+            {
+              "groupId": "${{ inputs.group-id }}",
+              "artifactId": "${{ inputs.artifact-id }}",
+              "lib-name": "${{ inputs.lib-name }}", 
+              "version": "${{ needs.deployNewVersion.outputs.version }}",
+              "actor": "${{ github.actor }}",
+
+              "commitSha": "${{ github.event.after }}",
+              "commitLink": "${{ github.event.compare }}",
+              "commitMessage": "${{ steps.commit-message.outputs.COMMIT_MESSAGE }}",
+              "commitAuthor": "${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>",
+              "commitAuthorUsername": "${{ github.event.head_commit.author.username }}"
+            }
