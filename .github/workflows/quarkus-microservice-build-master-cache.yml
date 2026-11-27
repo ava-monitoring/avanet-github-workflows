@@ -99,7 +99,7 @@ jobs:
         with:
           registries: '${{ secrets.ECR_REGISTRY }}'
       - name: Substring SHA
-        run: echo "::set-output name=GITHUB_SHA_SUBSTRING::${GITHUB_SHA:0:8}"
+        run: echo "GITHUB_SHA_SUBSTRING=${GITHUB_SHA:0:8}" >> "$GITHUB_OUTPUT"
         id: sha-substring
       - name: Decide avanet-charts base branch
         id: charts-ref
@@ -107,10 +107,10 @@ jobs:
           if [ "${GITHUB_REF}" == "refs/heads/master" ]; then
             # Potentially could have checked if ! [ "${GITHUB_REF}" =~ refs/tags/
             echo "Create Pull Request on avanet-charts dev branch"
-            echo "::set-output name=CHARTS_REF::dev"
+            echo "CHARTS_REF=dev" >> "$GITHUB_OUTPUT"
           else
             echo "Create Pull Request on avanet-charts test branch"
-            echo "::set-output name=CHARTS_REF::test"
+            echo "CHARTS_REF=test" >> "$GITHUB_OUTPUT"
           fi
       - name: Publish JVM image to AWS
         env:
@@ -122,7 +122,10 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
       - name: Remove newlines from commit message
         id: commit-message
-        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " " | tr "\t" " ")"
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          printf 'COMMIT_MESSAGE=%s\n' "$(printf '%s' "$MESSAGE" | tr '\r\n\t' '   ' | jq -Rr '@json | .[1:-1]')" >> "$GITHUB_OUTPUT"
       - name: Trigger avanet-charts with JVM image
         # https://github.com/marketplace/actions/workflow-dispatch
         # Alternative mathze/workflow-dispatch-action@v1.1.0 https://github.com/marketplace/actions/workflow-dispatch-action

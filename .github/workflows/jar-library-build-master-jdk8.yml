@@ -119,7 +119,10 @@ jobs:
 
       - name: Remove newlines from commit message
         id: commit-message
-        run: echo "::set-output name=COMMIT_MESSAGE::$(echo "${{ github.event.head_commit.message }}" | tr "\n" " " | tr "\t" " ")"
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          printf 'COMMIT_MESSAGE=%s\n' "$(printf '%s' "$MESSAGE" | tr '\r\n\t' '   ' | jq -Rr '@json | .[1:-1]')" >> "$GITHUB_OUTPUT"
 
       - name: Dispatch to ${{ matrix.repo }}
         uses: peter-evans/repository-dispatch@v4
